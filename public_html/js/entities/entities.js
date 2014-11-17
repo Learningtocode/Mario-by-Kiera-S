@@ -44,7 +44,8 @@ game.PlayerEntity = me.Entity.extend({
             }
         }else{
            this.renderable.setCurrentAnimation("idle");  
-        }
+        } 
+         
          
         //Changes where Mario is on screen. 
         
@@ -67,7 +68,8 @@ game.LevelTrigger = me.Entity.extend({
       
      onCollision: function(){
          this.body.setCollisionMask(me.collision.type.NO_OBJECT); 
-         me.levelDirector.loadLevel(this.level);
+         me.levelDirector.loadLevel(this.level); 
+         me.state.current().resetPlayer();
      }
      
 });
