@@ -19,7 +19,8 @@ game.PlayerEntity = me.Entity.extend({
             
             
     // The code below is the set speed of Mario.
-        this.body.setVelocity(5, 20);
+        this.body.setVelocity(5, 20); 
+        me.game.viewport.follow(this.pos, me.game.viewprot.AXIS.BOTH);
     }, 
     
     //Player press the right key, Mario moves right. 
