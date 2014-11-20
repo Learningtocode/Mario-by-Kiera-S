@@ -8,7 +8,7 @@ game.PlayerEntity = me.Entity.extend({
            width: 128, 
            height: 128, 
            getShape: function(){
-               return (new me.Rect(0, 0, 128, 128)).toPolygon();
+               return (new me.Rect(0, 0, 30, 128)).toPolygon();
            }
         }]);   
          
@@ -20,7 +20,7 @@ game.PlayerEntity = me.Entity.extend({
             
     // The code below is the set speed of Mario.
         this.body.setVelocity(5, 20); 
-        me.game.viewport.follow(this.pos, me.game.viewprot.AXIS.BOTH);
+        me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
     }, 
     
     //Player press the right key, Mario moves right. 
@@ -64,13 +64,15 @@ game.LevelTrigger = me.Entity.extend({
      init: function(x, y, settings){
          this._super(me.Entity, 'init', [x, y, settings]); 
          this.body.onCollision = this.onCollision.bind(this); 
-         this.level = settings.level;
+         this.level = settings.level; 
+         this.xSpawn = settings.xSpawn; 
+         this.ySpawn = settings.ySpawn;
      },   
       
      onCollision: function(){
-         this.body.setCollisionMask(me.collision.type.NO_OBJECT); 
+         this.body.setCollisionMask(me.collision.types.NO_OBJECT); 
          me.levelDirector.loadLevel(this.level); 
-         me.state.current().resetPlayer();
+         me.state.current().resetPlayer(this.xSpawn, this.ySpawn);
      }
      
 });
