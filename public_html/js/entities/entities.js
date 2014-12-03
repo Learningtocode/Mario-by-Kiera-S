@@ -75,4 +75,6 @@ game.LevelTrigger = me.Entity.extend({
          me.state.current().resetPlayer(this.xSpawn, this.ySpawn);
      }
      
-});
+}); 
+ 
+ game.BadGuy = me.
