@@ -29,7 +29,7 @@ game.PlayerEntity = me.Entity.extend({
      
     update: function(delta){
         if(me.input.isKeyPressed("right")){
-            this.body.vel.x += this.body.accel.x * me.timer.tick; 
+             this.body.vel.x += this.body.accel.x * me.timer.tick; 
             
         }else{
             this.body.vel.x = 0;
@@ -53,9 +53,9 @@ game.PlayerEntity = me.Entity.extend({
         this._super(me.Entity, "update", [delta]);
         return true;
     }, 
-     
+    
     collideHandler: function(response){
-        
+        //ydif is the difference in position between mario and whatever he hit so we can see if he jump on something.
     }
     
 }); 
@@ -105,16 +105,33 @@ game.LevelTrigger = me.Entity.extend({
         this.type = "badguy";
           
     //  this.renderable.addAnimation("run", [0, 1, 2], 80);
-    //   this.renderable.setCurrrentAnimation("run");
-      
+    //  this.renderable.setCurrrentAnimation("run");
+       
+    // Mario can't move withoutt any Velocity.
         this.body.setVelocity(4, 6);
       
      }, 
-      
+       
     update: function(delta){
         this.body.update(delta); 
-        me.collisions.check(this, true, this.collideHandler.bind(this), true);
-      
+        me.collision.check(this, true, this.collideHandler.bind(this), true);
+        
+       //Direction of movement of Bad Guy
+       if(this.alive){
+           if(this.walkLeft && this.pos.X <= this.startX){ 
+               this.walkLeft = false;
+            }else if(!this.walkLeft && this.pos.x >= thiis.endX){
+                this.walkLeft = true; 
+            }  
+            //Control animation to walk left; setting our varible
+            this.flipX(!this.walkLeft); 
+            //Tell the body how to move. If the first part is true then
+            this.body.vel.x += (this.walkLeft) ? -this.body.accel.x * me.timer.tick : ;
+                
+       }else{ 
+           //removeChild removes charater out game
+           me.game.world.removeChild(this);
+       }
       
         this._super(me.Entity, "update", [delta]); 
         return true;
