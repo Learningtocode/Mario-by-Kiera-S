@@ -1,5 +1,6 @@
 // TODO 
 game.PlayerEntity = me.Entity.extend({
+    //call a constructor 
     init: function(x, y, settings) {
         this._super(me.Entity, 'init', [x, y, {
            image: "mario",  
@@ -12,14 +13,21 @@ game.PlayerEntity = me.Entity.extend({
            }
         }]);   
          
-        this.renderable.addAnimation("idle", [3]);  
-        this.renderable.addAnimation("smallWalk", [8, 9, 10, 11, 12, 13], 80);
-             
+        //"Stomp" is the animation for when mario is grown and is moving.
+        this.renderable.addAnimation("stomp", [14, 15, 16, 17, 18, 19], 80);
+        //define a idle animation (using a frame)
+        this.renderable.addAnimation("idle", [3]); 
+        this.renderable.addAnimation("bigIdle", [19]);
+        //define a basic walking animation (using all frames)
+        this.renderable.addAnimation("walk", [8, 9, 10, 11, 12, 13], 80);
+         //set the idle animation as defult    
         this.renderable.setCurrentAnimation("idle");     
             
-            
-    // The code below is the set speed of Mario.
-        this.body.setVelocity(5, 20); 
+        //This makes sures that the settings above are not activated when the milk is consume.
+        this.big = false;
+        // The code below is the set speed of Mario.
+        this.body.setVelocity(5, 20);
+        //set display that follows the charater on both axis
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
     }, 
     
@@ -27,26 +35,63 @@ game.PlayerEntity = me.Entity.extend({
     //The first part of code for line 20 is the current speed Mario is going adding to the speed it's suppose to be at (the second part). 
     //The me.timer.tick make sures the walking movement of Mario is accurate to the speed it's going.
      
-    update: function(delta){
-        if(me.input.isKeyPressed("right")){
-             this.body.vel.x += this.body.accel.x * me.timer.tick; 
-            
-        }else{
+    update: function(delta) {
+        if (me.input.isKeyPressed("right")) {
+            // unflips the sprite
+            this.flipX(false);
+            this.body.vel.x += this.body.accel.x * me.timer.tick;
+            if (!this.renderable.isCurrentAnimation("walk")) {
+                this.renderable.setCurrentAnimation("walk");
+            }
+        } else if (me.input.isKeyPressed("left")) {
+            // flip the sprite on the horizontal axis
+            this.flipX(true);
+            //updates the entity velocity so basically the charater is walking right now... 
+            this.body.vel.x -= this.body.accel.x * me.timer.tick;
+            if (!this.renderable.isCurrentAnimation("walk")) {
+                this.renderable.setCurrentAnimation("walk");
+            }
+        } else {
             this.body.vel.x = 0;
-        } 
+            //change to the standing animation
+            this.renderable.setCurrentAnimation("idle");
+        }
           
+        if(!this.big){
+        if(this.body.vel.x !== 0){  
+           if(!this.renderable.isCurrentAnimation("walk")) {
+            this.renderable.setCurrentAnimation("walk"); 
+             this.renderable.setAnimationFrame();
+            }
+     }else{   
+          this.renderable.setCurrentAnimation("idle"); 
+        }  
+    }else{
+       if(this.body.vel.x !== 0){  
+           if(!this.renderable.isCurrentAnimation("stomp")) {
+            this.renderable.setCurrentAnimation("stomp"); 
+             this.renderable.setAnimationFrame();
+            }
+     }else{   
+          this.renderable.setCurrentAnimation("bigIdle"); 
+        }  
+    } 
+    
+         
+        if(me.input.isKeyPressed("up")){
+            // make sure we are not already falling or jumping 
+            if(!this.body.jumping && !this.body.falling){
+               //set the jumping flag
+                this.body.jumping = true;
+               // set current vel to the maximum defined value 
+              // Then let gravity do the rest 
+              this.body.vel.y == this.body.accel.y * me.timer.tick;       
+            }
+        } 
+         
          this.body.update(delta);
          me.collision.check(this, true, this.collideHandler.bind(this), true);
            
-        if(this.body.vel.x !== 0){  
-            if (!this.renderable.isCurrentAnimation("smallWalk")) {
-                this.renderable.setCurrentAnimation("smallWalk"); 
-                this.renderable.setAnimationFrame();
-            }
-        }else{
-           this.renderable.setCurrentAnimation("idle");  
-        } 
-         
          
         //Changes where Mario is on screen. 
         
@@ -55,7 +100,21 @@ game.PlayerEntity = me.Entity.extend({
     }, 
     
     collideHandler: function(response){
-        //ydif is the difference in position between mario and whatever he hit so we can see if he jump on something.
+        //ydif is the difference in position between mario and whatever he hit so we can see if he jump on something.  
+        // b represents what we are running into 
+        var ydif = this.pos.y response.b.pos.y;
+   
+        if(response.b.type === 'badguy'){ 
+            if(ydif <= -115){
+               response.b.alive = false;
+            }else{
+           me.state.change(me.state.MENU);
+        }else if(response.b.type === 'milk'){
+            this.big = true; 
+        //Response.b represents the Mushroom or in this case milk 
+            me.game.world.removeChild(response.b);
+        }
+         
     }
     
 }); 
@@ -77,7 +136,7 @@ game.LevelTrigger = me.Entity.extend({
      
 }); 
  
- game.BadGuy = me.Entity.extend({
+game.BadGuy = me.Entity.extend({
      init: function(x, y, settings){
           this._super(me.Entity, 'init', [x, y, {
            image: "slime",  
@@ -120,13 +179,14 @@ game.LevelTrigger = me.Entity.extend({
        if(this.alive){
            if(this.walkLeft && this.pos.X <= this.startX){ 
                this.walkLeft = false;
-            }else if(!this.walkLeft && this.pos.x >= thiis.endX){
+            }else if(!this.walkLeft && this.pos.x >= this.endX){
                 this.walkLeft = true; 
             }  
             //Control animation to walk left; setting our varible
             this.flipX(!this.walkLeft); 
-            //Tell the body how to move. If the first part is true then
-            this.body.vel.x += (this.walkLeft) ? -this.body.accel.x * me.timer.tick : ;
+            //Tell the body how to move. If this is true, then we will have the charater do the code after the question mark. 
+            //The code with "-this" mmeans we're going left and the code after the colon means the charater is going right.
+            this.body.vel.x += (this.walkLeft) ? -this.body.accel.x * me.timer.tick : this.body.accel.x * me.timer.tick;
                 
        }else{ 
            //removeChild removes charater out game
@@ -141,4 +201,24 @@ game.LevelTrigger = me.Entity.extend({
         
     }
      
- });
+ }); 
+  
+
+game.milk = me.Entity.extend({
+    init: function(x, y, settings) {
+        this._super(me.Entity, 'init', [x, y, {
+                image: "milk",
+                spritewidth: "60",
+                spriteheight: "68",
+                width: 60,
+                height: 68,
+                getShape: function() {
+                    return (new me.Rect(0, 0, 60, 68)).toPolygon();
+                }
+            }]); 
+        //Charater can collide with milk 
+        me.collision.check(this); 
+        this.type = "milk";
+    }
+
+});
