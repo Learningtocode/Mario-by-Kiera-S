@@ -4,12 +4,15 @@ game.resources = [
 	 * @example
 	 * {name: "example", type:"image", src: "data/img/example.png"},
 	 */
-        {name: "background-tiles", type: "image", src: "data/img/background-tiles.png"}, 
+        {name: "background-tiles", type: "image", src: "data/img/background-tiles.png"},  
+        {name: "cloud-tiles", type: "image", src: "data/img/cloud-tiles.png"}, 
+        {name: "Game Backdrop", type: "image", src: "data/img/Game Backdrop.jpg"},  
         {name: "meta-tiles", type: "image", src: "data/img/meta-tiles.png"},
         {name: "mario", type:"image", src: "data/img/player1.png"},  
-        {name: "title-screen", type:"image", src: "data/img/title-screen.png"},  
+        {name: "title-screen", type:"image", src: "data/img/Day Sky title.png"}, 
+        {name: "end-screen", type:"image", src: "data/img/night sky title.png"},
         {name: "slime", type:"image", src: "data/img/slime-spritesheet.png"},
-        {name: "milk", type:"image", src: "milk.png"},
+        {name: "milk", type:"image", src: "data/img/milk.png"},
          
 	/* Atlases 
 	 * @example

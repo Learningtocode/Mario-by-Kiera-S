@@ -7,7 +7,7 @@ game.PlayerEntity = me.Entity.extend({
            spritewidth: "128",
            spriteheight: "128", 
            width: 128, 
-           height: 128, 
+           height: 28, 
            getShape: function(){
                return (new me.Rect(0, 0, 30, 128)).toPolygon();
            }
@@ -21,7 +21,11 @@ game.PlayerEntity = me.Entity.extend({
         //define a basic walking animation (using all frames)
         this.renderable.addAnimation("walk", [8, 9, 10, 11, 12, 13], 80);
          //set the idle animation as defult    
-        this.renderable.setCurrentAnimation("idle");     
+        this.renderable.setCurrentAnimation("idle");   
+        //Animation for when mario goes back to small 
+        this.renderable.addAnimation("shrink", [0, 1, 2, 3], 80);  
+        this.renderable.addAnimation("grow",[4, 5, 6, 7], 80);
+        
             
         //This makes sures that the settings above are not activated when the milk is consume.
         this.big = false;
@@ -40,26 +44,26 @@ game.PlayerEntity = me.Entity.extend({
             // unflips the sprite
             this.flipX(false);
             this.body.vel.x += this.body.accel.x * me.timer.tick;
-            if (!this.renderable.isCurrentAnimation("walk")) {
-                this.renderable.setCurrentAnimation("walk");
+             if (!this.renderable.isCurrentAnimation("walk")) {
+             this.renderable.setCurrentAnimation("walk");
             }
         } else if (me.input.isKeyPressed("left")) {
             // flip the sprite on the horizontal axis
             this.flipX(true);
             //updates the entity velocity so basically the charater is walking right now... 
             this.body.vel.x -= this.body.accel.x * me.timer.tick;
-            if (!this.renderable.isCurrentAnimation("walk")) {
-                this.renderable.setCurrentAnimation("walk");
+              if (!this.renderable.isCurrentAnimation("walk")) {
+              this.renderable.setCurrentAnimation("walk");
             }
         } else {
             this.body.vel.x = 0;
             //change to the standing animation
-            this.renderable.setCurrentAnimation("idle");
+              this.renderable.setCurrentAnimation("idle");
         }
           
         if(!this.big){
         if(this.body.vel.x !== 0){  
-           if(!this.renderable.isCurrentAnimation("walk")) {
+           if(!this.renderable.isCurrentAnimation("walk") && !this.renderable.isCurrentAnimation("grow") && this.renderable.isCurrentAnimation("shrink")) {
             this.renderable.setCurrentAnimation("walk"); 
              this.renderable.setAnimationFrame();
             }
@@ -68,7 +72,9 @@ game.PlayerEntity = me.Entity.extend({
         }  
     }else{
        if(this.body.vel.x !== 0){  
-           if(!this.renderable.isCurrentAnimation("stomp")) {
+           //The line of code below makes sures if you are in the middle of shrinking you will not go back to walking. 
+           // Remember that ! means not && means and
+           if(!this.renderable.isCurrentAnimation("stomp") && !this.renderable.isCurrentAnimation("grow") && this.renderable.isCurrentAnimation("shrink")){
             this.renderable.setCurrentAnimation("stomp"); 
              this.renderable.setAnimationFrame();
             }
@@ -78,14 +84,12 @@ game.PlayerEntity = me.Entity.extend({
     } 
     
          
-        if(me.input.isKeyPressed("up")){
+        if(me.input.isKeyPressed('jump')){
             // make sure we are not already falling or jumping 
             if(!this.body.jumping && !this.body.falling){
-               //set the jumping flag
-                this.body.jumping = true;
                // set current vel to the maximum defined value 
               // Then let gravity do the rest 
-              this.body.vel.y == this.body.accel.y * me.timer.tick;       
+              this.body.vel.y = this.body.accel.y * me.timer.tick;       
             }
         } 
          
@@ -99,22 +103,32 @@ game.PlayerEntity = me.Entity.extend({
         return true;
     }, 
     
-    collideHandler: function(response){
+    collideHandler: function(response) {
         //ydif is the difference in position between mario and whatever he hit so we can see if he jump on something.  
         // b represents what we are running into 
-        var ydif = this.pos.y response.b.pos.y;
-   
-        if(response.b.type === 'badguy'){ 
-            if(ydif <= -115){
-               response.b.alive = false;
-            }else{
-           me.state.change(me.state.MENU);
-        }else if(response.b.type === 'milk'){
+        var ydif = this.pos.y - response.b.pos.y;
+
+        if (response.b.type === 'badguy') {
+            if (ydif <= -115) {
+                response.b.alive = false;
+            } else { 
+                if(this.big){
+                    this.big = false; 
+                    this.body.vel.y -= this.body.accel.y * me.timer.tick; 
+                    this.jumping = true; 
+                    this.renderable.setCurrentAnimation("shrink", "idle"); 
+                    this.renderable.setAnimationFrame();
+                }else{
+                  me.state.change(me.state.MENU); 
+              }    
+            }
+        } else if (response.b.type === 'milk') {
+            this.renderable.setCurrentAnimation("grow", "bigIdle");
             this.big = true; 
-        //Response.b represents the Mushroom or in this case milk 
+            //Response.b represents the Mushroom or in this case milk 
             me.game.world.removeChild(response.b);
         }
-         
+
     }
     
 }); 
