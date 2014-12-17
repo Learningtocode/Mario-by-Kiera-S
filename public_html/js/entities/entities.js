@@ -14,12 +14,12 @@ game.PlayerEntity = me.Entity.extend({
         }]);   
          
         //"Stomp" is the animation for when mario is grown and is moving.
-        this.renderable.addAnimation("stomp", [14, 15, 16, 17, 18, 19], 80);
+        this.renderable.addAnimation("bigWalk", [14, 15, 16, 17, 18 ,19], 80);
         //define a idle animation (using a frame)
         this.renderable.addAnimation("idle", [3]); 
         this.renderable.addAnimation("bigIdle", [19]);
         //define a basic walking animation (using all frames)
-        this.renderable.addAnimation("walk", [8, 9, 10, 11, 12, 13], 80);
+        this.renderable.addAnimation("smallWalk", [8, 9, 10, 11, 12, 13], 80);
          //set the idle animation as defult    
         this.renderable.setCurrentAnimation("idle");   
         //Animation for when mario goes back to small 
@@ -44,27 +44,27 @@ game.PlayerEntity = me.Entity.extend({
             // unflips the sprite
             this.flipX(false);
             this.body.vel.x += this.body.accel.x * me.timer.tick;
-             if (!this.renderable.isCurrentAnimation("walk")) {
-             this.renderable.setCurrentAnimation("walk");
+             if (!this.renderable.isCurrentAnimation("smallWalk")) {
+             this.renderable.setCurrentAnimation("smallWalk");
             }
         } else if (me.input.isKeyPressed("left")) {
             // flip the sprite on the horizontal axis
             this.flipX(true);
             //updates the entity velocity so basically the charater is walking right now... 
             this.body.vel.x -= this.body.accel.x * me.timer.tick;
-              if (!this.renderable.isCurrentAnimation("walk")) {
-              this.renderable.setCurrentAnimation("walk");
+              if (!this.renderable.isCurrentAnimation("smallWalk")) {
+              this.renderable.setCurrentAnimation("smallWalk");
             }
         } else {
             this.body.vel.x = 0;
             //change to the standing animation
               this.renderable.setCurrentAnimation("idle");
-        }
+        } 
           
         if(!this.big){
         if(this.body.vel.x !== 0){  
-           if(!this.renderable.isCurrentAnimation("walk") && !this.renderable.isCurrentAnimation("grow") && this.renderable.isCurrentAnimation("shrink")) {
-            this.renderable.setCurrentAnimation("walk"); 
+           if(!this.renderable.isCurrentAnimation("smallWalk") && !this.renderable.isCurrentAnimation("grow") && this.renderable.isCurrentAnimation("shrink")) {
+            this.renderable.setCurrentAnimation("smallWalk"); 
              this.renderable.setAnimationFrame();
             }
      }else{   
@@ -74,8 +74,8 @@ game.PlayerEntity = me.Entity.extend({
        if(this.body.vel.x !== 0){  
            //The line of code below makes sures if you are in the middle of shrinking you will not go back to walking. 
            // Remember that ! means not && means and
-           if(!this.renderable.isCurrentAnimation("stomp") && !this.renderable.isCurrentAnimation("grow") && this.renderable.isCurrentAnimation("shrink")){
-            this.renderable.setCurrentAnimation("stomp"); 
+           if(!this.renderable.isCurrentAnimation("bigWalk") && !this.renderable.isCurrentAnimation("grow") && this.renderable.isCurrentAnimation("shrink")){
+            this.renderable.setCurrentAnimation("bigWalk"); 
              this.renderable.setAnimationFrame();
             }
      }else{   
@@ -88,8 +88,9 @@ game.PlayerEntity = me.Entity.extend({
             // make sure we are not already falling or jumping 
             if(!this.body.jumping && !this.body.falling){
                // set current vel to the maximum defined value 
-              // Then let gravity do the rest 
-              this.body.vel.y = this.body.accel.y * me.timer.tick;       
+              // Then let gravity do the rest        
+             this.body.vel.y = -this.body.maxVel.y * me.timer.tick;
+             this.body.jumping = true;
             }
         } 
          
